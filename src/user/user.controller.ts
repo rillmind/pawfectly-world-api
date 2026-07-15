@@ -1,37 +1,37 @@
 import {
   Res,
   Get,
+  Req,
   Post,
   Body,
   Patch,
   Param,
+  Header,
   Delete,
   HttpCode,
   Controller,
   HttpStatus,
   NotFoundException,
   BadRequestException,
-  Req,
-  Header,
 } from "@nestjs/common";
-import { User } from "./schemas/user.schemas";
-import { Role } from "src/auth/enum/roles.enum";
-import { Roles } from "src/auth/decorator/roles.decorator";
 import { Types } from "mongoose";
-import { Public } from "src/auth/decorator/public.auth.decorator";
-import { JwtAuth } from "src/auth/decorator/jwt.auth.decorator";
 import { Response } from "express";
 import { UserService } from "./user.service";
-import { OwnerChecker } from "src/auth/decorator/ownership.checker.decorator";
+import { User } from "./schemas/user.schemas";
+import { Role } from "src/auth/enum/roles.enum";
 import { Post_schema_user } from "./dto/user.signup.dto";
-import { UserOwnershipChecker } from "./owner/user.ownershup.checker";
 import { Patch_schema_user } from "./dto/user.update.dto";
+import { Roles } from "src/auth/decorator/roles.decorator";
+import { JwtAuth } from "src/auth/decorator/jwt.auth.decorator";
+import { Public } from "src/auth/decorator/public.auth.decorator";
+import { UserOwnershipChecker } from "./owner/user.ownershup.checker";
+import { OwnerChecker } from "src/auth/decorator/ownership.checker.decorator";
 
 @Controller("user")
 @JwtAuth()
 @OwnerChecker(UserOwnershipChecker)
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   @Post()
   @Public()
@@ -52,6 +52,12 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   public async findAll(): Promise<User[]> {
     return this.userService.findAll();
+  }
+
+  @Get("health")
+  @HttpCode(HttpStatus.OK)
+  public async health() {
+    return { msg: HttpStatus.OK }
   }
 
   @Get(":id")

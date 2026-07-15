@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:7
+    container_name: pawfectly-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: pawfectly_world
+
+  app:
+    build: .
+    container_name: pawfectly-app
+    restart: unless-stopped
+    ports:
+      - "2306:2306"
+    environment:
+      ATLAS_URI: mongodb://mongodb:27017/pawfectly_world
+      JWT_SECRET: ${JWT_SECRET}
+      ENCRYPT_JWT_SECRET: ${ENCRYPT_JWT_SECRET}
+      JWT_EXPIRES: ${JWT_EXPIRES}
+    depends_on:
+      - mongodb
+
+volumes:
+  mongodb_data:
