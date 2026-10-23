@@ -1,3 +1,68 @@
+# pawfectly-world-api
+
+API da Pawfectly World, rede social de adoção de animais, em NestJS + MongoDB.
+
+## O que faz
+
+API REST (porta `2306`) com cadastro e login de usuários (JWT), perfis de animais, posts e
+pedidos de adoção. As rotas ficam em `src/<módulo>/<módulo>.controller.ts`: `/user`, `/auth`,
+`/animal`, `/post` e `/adoption`. Quase todas exigem o token devolvido no cabeçalho
+`Authorization` do `POST /auth`; algumas exigem o papel `admin` ou ser o dono do recurso.
+
+## Por que existe
+
+Foi o TCC do curso técnico em Informática do IFPE (2023), feito em dupla: eu fiz esta API e um
+colega fez o front-end que a consome. O protótipo das telas está em
+[pawfectly-world-design](https://github.com/rillmind/pawfectly-world-design) e a suíte de testes
+de integração em [pawfectly-world-api-tests](https://github.com/rillmind/pawfectly-world-api-tests).
+
+## Instalação
+
+Pré-requisitos: Podman + podman-compose (ou Docker Compose). Para rodar fora do contêiner,
+Node.js 20: a API não sobe no Node 26 (`TypeError: Cannot read properties of undefined (reading
+'prototype')` no pacote `jwa`).
+
+O `.env` versionado aponta para um cluster do MongoDB Atlas. Para usar um MongoDB local, suba o
+banco e a API pelo compose, que troca o `ATLAS_URI` pelo contêiner `mongodb`:
+
+```bash
+git clone https://github.com/rillmind/pawfectly-world-api.git
+cd pawfectly-world-api
+export JWT_SECRET=troque-isto ENCRYPT_JWT_SECRET=troque-isto-tambem JWT_EXPIRES=1d
+podman-compose up -d --build   # MongoDB 7 em :27017 e a API em :2306
+```
+
+Sem contêiner para a API (Node 20):
+
+```bash
+npm ci
+podman-compose up -d mongodb
+ATLAS_URI=mongodb://localhost:27017/pawfectly_world npm run start:dev
+```
+
+## Como testar
+
+Não há testes unitários (`npm run test` não encontra nenhum `*.spec.ts`), e o `test/app.e2e-spec.ts`
+é o do template do Nest: espera `Hello World!` em `GET /`, rota que esta API não tem.
+`npm run build` confere que o projeto compila.
+
+Para conferir à mão, com a API rodando:
+
+```bash
+curl -X POST localhost:2306/user -H 'content-type: application/json' \
+  -d '{"nome":"Admin","username":"admin","email":"admin@email.com","senha":"123456"}'
+curl -i -X POST localhost:2306/auth -H 'content-type: application/json' \
+  -d '{"email_ou_username":"admin","senha":"123456"}'   # 200 e o token em Authorization
+```
+
+Os testes de integração ficam em
+[pawfectly-world-api-tests](https://github.com/rillmind/pawfectly-world-api-tests). Eles precisam
+de um usuário `admin` e da rota `GET /health`, que ainda não está neste repositório (há
+`GET /user/health`, que exige login). Por isso a suíte para no `TestMain` com
+`status-code: 404, want 200`.
+
+---
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
 </p>
